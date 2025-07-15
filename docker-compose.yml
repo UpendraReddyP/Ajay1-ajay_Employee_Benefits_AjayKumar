@@ -14,7 +14,7 @@ services:
       - pgdata:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
-      - "5422:5432"  # Changed to standard port
+      - "5094:5432"  # Changed to standard port
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -27,7 +27,7 @@ services:
       dockerfile: Dockerfile
     container_name: backend_container8
     ports:
-      - "3422:3422"
+      - "3094:3094"
     depends_on:
       postgres:
         condition: service_healthy
@@ -37,8 +37,8 @@ services:
       DB_NAME: new_employee_db
       DB_PASSWORD: admin123
       DB_PORT: 5432
-      PORT: 3422
-      FRONTEND_URL: http://44.223.23.145:8043
+      PORT: 3094
+      FRONTEND_URL: http://13.60.223.220:8157
     volumes:
       - ./Backend/Uploads:/app/Uploads  # Persistent storage for uploads
 
@@ -48,7 +48,7 @@ services:
       dockerfile: Dockerfile
     container_name: frontend_container8
     ports:
-      - "8043:80"
+      - "8157:80"
     depends_on:
       - backend
 
@@ -58,7 +58,7 @@ services:
       dockerfile: Dockerfile
     container_name: hr_container8
     ports:
-      - "8044:80"
+      - "8158:80"
     depends_on:
       - backend
 
