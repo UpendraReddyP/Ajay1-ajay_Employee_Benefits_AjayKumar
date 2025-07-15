@@ -15,7 +15,7 @@
             --success: #00b894;
             --warning: #fdcb6e;
             --danger: #d63031;
-            --light: #f8 peyfa;
+            --light: #f8f9fa;
             --dark: #2d3436;
             --gray: #636e72;
             --gray-light: #dfe6e9;
@@ -117,7 +117,7 @@
         .section-title {
             font-family: 'Poppins', sans-serif;
             font-size: 1.75rem;
-            margin-bottom: 1.5rem;
+            margin-bottom: 0;
             color: var(--dark);
             position: relative;
             display: inline-block;
@@ -136,6 +136,66 @@
 
         .requests-section {
             width: 100%;
+        }
+
+        .table-header {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            gap: 1rem;
+        }
+
+        .search-filter-container {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .search-bar {
+            position: relative;
+            max-width: 300px;
+            width: 100%;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border: 1px solid var(--gray-light);
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+        }
+
+        .status-filter {
+            padding: 0.75rem;
+            border: 1px solid var(--gray-light);
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            background: white;
+            transition: var(--transition);
+            min-width: 150px;
+        }
+
+        .status-filter:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
         }
 
         .requests-table-container {
@@ -172,6 +232,13 @@
         .requests-table td {
             font-size: 0.9rem;
             color: var(--dark);
+        }
+
+        .requests-table .name-column {
+            max-width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .requests-table tr:hover {
@@ -221,7 +288,7 @@
         }
 
         .empty-state {
-            text-align: center;
+            text-align: center Justices;
             padding: 3rem;
             color: var(--gray);
         }
@@ -459,6 +526,10 @@
                 font-size: 0.85rem;
             }
             
+            .requests-table .name-column {
+                max-width: 150px;
+            }
+
             .detail-row {
                 flex-direction: column;
                 gap: 0.25rem;
@@ -466,6 +537,26 @@
             
             .detail-label {
                 flex: none;
+            }
+
+            .table-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .search-filter-container {
+                flex-direction: row;
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            .search-bar {
+                max-width: 100%;
+                flex: 1;
+            }
+
+            .status-filter {
+                min-width: 120px;
             }
         }
 
@@ -479,6 +570,19 @@
             }
             
             .modal-buttons .btn {
+                width: 100%;
+            }
+
+            .requests-table .name-column {
+                max-width: 100px;
+            }
+
+            .search-filter-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .status-filter {
                 width: 100%;
             }
         }
@@ -499,7 +603,21 @@
 
     <div class="container">
         <section class="requests-section">
-            <h2 class="section-title">All Benefit Requests</h2>
+            <div class="table-header">
+                <h2 class="section-title">All Benefit Requests</h2>
+                <div class="search-filter-container">
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="search-input" placeholder="Search by name or ID...">
+                    </div>
+                    <select class="status-filter" id="status-filter">
+                        <option value="">All Statuses</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+                </div>
+            </div>
             <div class="requests-table-container">
                 <table class="requests-table">
                     <thead>
@@ -567,7 +685,7 @@
                     
                     <div class="detail-row">
                         <div class="detail-label">Status</div>
-                        <div class="detail-value status" id="detail-status">-</div>
+                        <0div class="detail-value status" id="detail-status">-</div>
                     </div>
                     
                     <div class="detail-row">
@@ -628,14 +746,24 @@
     <script>
         class HRDashboardApp {
             constructor() {
-                this.BASE_URL = 'http://44.223.23.145:3422';
+                this.BASE_URL = 'http://13.60.223.220:3094';
                 this.currentRequestId = null;
                 this.currentAction = null;
+                this.allRequests = [];
                 this.init();
             }
 
             init() {
                 this.loadAllRequests();
+                this.setupEventListeners();
+            }
+
+            setupEventListeners() {
+                const searchInput = document.getElementById('search-input');
+                const statusFilter = document.getElementById('status-filter');
+
+                searchInput.addEventListener('input', () => this.filterRequests());
+                statusFilter.addEventListener('change', () => this.filterRequests());
             }
 
             async loadAllRequests() {
@@ -644,13 +772,27 @@
                     if (!response.ok) {
                         throw new Error('Failed to fetch requests');
                     }
-                    const requests = await response.json();
-                    this.renderRequests(requests);
+                    this.allRequests = await response.json();
+                    this.renderRequests(this.allRequests);
                 } catch (e) {
                     console.error('Error:', e);
                     this.showAlert('Error loading requests', 'error');
                     this.renderRequests([]);
                 }
+            }
+
+            filterRequests() {
+                const searchTerm = document.getElementById('search-input').value.toLowerCase();
+                const statusFilter = document.getElementById('status-filter').value;
+
+                const filteredRequests = this.allRequests.filter(req => {
+                    const matchesSearch = req.name.toLowerCase().includes(searchTerm) || 
+                                        req.emp_id.toLowerCase().includes(searchTerm);
+                    const matchesStatus = !statusFilter || req.status === statusFilter;
+                    return matchesSearch && matchesStatus;
+                });
+
+                this.renderRequests(filteredRequests);
             }
 
             renderRequests(requests) {
@@ -673,10 +815,11 @@
                     const tr = document.createElement('tr');
                     const date = new Date(req.request_date).toLocaleDateString();
                     const statusClass = `status-${req.status.toLowerCase()}`;
+                    const name = req.name.length > 30 ? req.name.substring(0, 30) + '...' : req.name;
 
                     tr.innerHTML = `
                         <td>${req.emp_id}</td>
-                        <td>${req.name}</td>
+                        <td class="name-column">${name}</td>
                         <td>${req.program}</td>
                         <td>${date}</td>
                         <td><span class="status-badge ${statusClass}">${req.status}</span></td>
@@ -692,9 +835,7 @@
 
             async showRequestDetails(requestId) {
                 try {
-                    const response = await fetch(`${this.BASE_URL}/api/requests`);
-                    const requests = await response.json();
-                    const request = requests.find(r => r.id === requestId);
+                    const request = this.allRequests.find(r => r.id === requestId);
                     if (!request) {
                         this.showAlert('Request not found', 'error');
                         return;
