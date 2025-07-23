@@ -30,6 +30,7 @@ services:
       - "3094:3094"
     depends_on:
       postgres:
+
         condition: service_healthy
     environment:
       DB_USER: postgres
@@ -38,7 +39,7 @@ services:
       DB_PASSWORD: admin123
       DB_PORT: 5432
       PORT: 3094
-      FRONTEND_URL: http://13.60.58.217:8157
+      FRONTEND_URL: http://13.60.191.32:8157
     volumes:
       - ./Backend/Uploads:/app/Uploads  # Persistent storage for uploads
 
